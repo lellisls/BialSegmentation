@@ -1,3 +1,4 @@
+#include "cursorchanger.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -113,4 +114,8 @@ void MainWindow::openList(QFileInfoList list) {
       }
     }
   }
+}
+
+void MainWindow::on_pushButton_clicked() {
+  ui->graphicsView->startSegmentation();
 }

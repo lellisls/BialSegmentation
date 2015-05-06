@@ -1,3 +1,4 @@
+#include "cursorchanger.h"
 #include "graphicsview.h"
 #include "../bial/gui/inc/guiimage.hpp"
 
@@ -7,10 +8,7 @@ GraphicsView::GraphicsView(QWidget *parent) :
   scene()->setBackgroundBrush(QBrush(Qt::black));
   pixmapItem = new QGraphicsPixmapItem();
   scene()->addItem(pixmapItem);
-  objArea = new SegmentationArea();
-  bkgArea = new SegmentationArea();
-  scene()->addItem(objArea);
-  scene()->addItem(bkgArea);
+  editor.install(scene());
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *) {
@@ -40,17 +38,14 @@ void GraphicsView::loadImage( int pos ) {
   pixmapItem->setPixmap(img->getPixmap(0));
   scene()->setSceneRect(pixmapItem->pixmap().rect());
   fitInView(pixmapItem, Qt::KeepAspectRatio);
+  editor.clear();
+  currentImg = pos;
 }
 
-
-void GraphicsView::mousePressEvent(QMouseEvent * me) {
-
-}
-
-void GraphicsView::mouseReleaseEvent(QMouseEvent * me) {
-
-}
-
-void GraphicsView::mouseMoveEvent(QMouseEvent * me) {
-
+void GraphicsView::startSegmentation() {
+  CursorChanger cursor(Qt::WaitCursor);
+  Bial::GuiImage * img = images.at(currentImg);
+  Bial::Vector< size_t > obj ( editor.objArea()->getPoints(img->width(),img->heigth()) );
+  Bial::Vector< size_t > bkg ( editor.bkgArea()->getPoints(img->width(),img->heigth()) );
+  img->segmentation(obj,bkg);
 }

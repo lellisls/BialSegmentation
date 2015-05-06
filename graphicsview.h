@@ -1,7 +1,7 @@
 #ifndef GRAPHICSVIEW_H
 #define GRAPHICSVIEW_H
 
-#include "segmentationarea.h"
+#include "editor.h"
 
 #include <QGraphicsView>
 #include <QGraphicsPixmapItem>
@@ -25,18 +25,13 @@ signals:
 
 public slots:
   void loadImage(int pos);
+  void startSegmentation();
 
 private:
   QVector< Bial::GuiImage * > images;
   QGraphicsPixmapItem * pixmapItem;
-  SegmentationArea * objArea;
-  SegmentationArea * bkgArea;
-
-  // QWidget interface
-protected:
-  void mousePressEvent(QMouseEvent *me);
-  void mouseReleaseEvent(QMouseEvent *me);
-  void mouseMoveEvent(QMouseEvent *me);
+  Editor editor;
+  int currentImg;
 };
 
 #endif // GRAPHICSVIEW_H
