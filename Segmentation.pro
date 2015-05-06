@@ -31,14 +31,14 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     graphicsview.cpp \
-    editor.cpp
+    segmentationarea.cpp
 
 HEADERS  += \
     mainwindow.h \
     graphicsview.h \
-    editor.h \
     bialqt.hpp \
-    ../bial/gui/inc/guiimage.hpp
+    ../bial/gui/inc/guiimage.hpp \
+    segmentationarea.h
 
 FORMS    += mainwindow.ui
 

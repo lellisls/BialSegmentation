@@ -21,17 +21,21 @@ MainWindow::~MainWindow() {
   delete ui;
 }
 
+void MainWindow::openFile(QString fname) {
+  try {
+    ui->graphicsView->open(fname);
+  } catch ( std::logic_error & e ) {
+    std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
+    QMessageBox::warning(this,"Error","Could not open file.",QMessageBox::Ok,QMessageBox::NoButton);
+  }
+}
+
 void MainWindow::on_actionOpen_triggered() {
   QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder,tr("NetPBM Images( *.pbm *pgm *.ppm *.pnm *.pbm.gz *pgm.gz *.ppm.gz *.pnm.gz) "));
   if(!fname.isEmpty()) {
     CursorChanger cursor(Qt::WaitCursor);
-    try {
-      ui->graphicsView->clear();
-      ui->graphicsView->open(fname);
-    } catch ( std::logic_error & e ) {
-      std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
-      QMessageBox::warning(this,"Error","Could not open file.",QMessageBox::Ok,QMessageBox::NoButton);
-    }
+    ui->graphicsView->clear();
+    openFile(fname);
   }
 }
 
@@ -42,18 +46,8 @@ void MainWindow::on_actionOpen_folder_triggered() {
     ui->graphicsView->clear();
     QStringList filters;
     filters << "*.pbm" << "*.pgm" << "*.ppm" << "*.pnm" << "*.pbm.gz" << "*.pgm.gz" << "*.ppm.gz" << "*.pnm.gz";
-    QStringList list = dir.entryList(filters);
-    CursorChanger cursor(Qt::WaitCursor);
-    for( int fl = 0; fl < list.size(); ++fl ) {
-      QString fname = list[fl];
-      try {
-        ui->graphicsView->open(dir.absoluteFilePath(fname));
-      } catch ( std::logic_error & e ) {
-        std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
-      } catch ( std::runtime_error & e ) {
-        std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
-      }
-    }
+    QFileInfoList list = dir.entryInfoList(filters);
+    openList(list);
   }
 }
 
@@ -104,4 +98,19 @@ void MainWindow::readSettings() {
 
 void MainWindow::on_horizontalSlider_sliderMoved(int position) {
   ui->graphicsView->loadImage(position);
+}
+
+void MainWindow::openList(QFileInfoList list) {
+  CursorChanger cursor(Qt::WaitCursor);
+  foreach( QFileInfo fileInfo, list) {
+    if(fileInfo.exists()) {
+      try {
+        ui->graphicsView->open(fileInfo.absoluteFilePath());
+      } catch ( std::logic_error & e ) {
+        BIAL_WARNING( "Error opening file " << fileInfo.absoluteFilePath().toStdString() << ". " << e.what() );
+      } catch ( std::runtime_error & e ) {
+        BIAL_WARNING( "Error opening file " << fileInfo.absoluteFilePath().toStdString() << ". " << e.what() );
+      }
+    }
+  }
 }
