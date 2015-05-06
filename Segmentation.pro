@@ -12,13 +12,40 @@ TARGET = Segmentation
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
+SOURCES += \
+    ../bial/src/StaticMembers.cpp \
+    ../bial/src/StaticBial.cpp \
+    ../bial/src/Dicomdir.cpp \
+    ../bial/src/Patient.cpp \
+    ../bial/src/Series.cpp \
+    ../bial/src/Study.cpp \
+    ../bial/src/ImageInfo.cpp \
+    ../bial/lsh/BucketHashing.cpp \
+    ../bial/lsh/Geometry.cpp \
+    ../bial/lsh/GlobalVars.cpp \
+    ../bial/lsh/LocalitySensitiveHashing.cpp \
+    ../bial/lsh/LSH.cpp \
+    ../bial/lsh/NearNeighbors.cpp \
+    ../bial/lsh/Random.cpp \
+    ../bial/lsh/SelfTuning.cpp \
+    main.cpp \
+    mainwindow.cpp \
     graphicsview.cpp \
     editor.cpp
 
-HEADERS  += mainwindow.h \
+HEADERS  += \
+    mainwindow.h \
     graphicsview.h \
-    editor.h
+    editor.h \
+    bialqt.hpp \
+    ../bial/gui/inc/guiimage.hpp
 
 FORMS    += mainwindow.ui
+
+INCLUDEPATH += inc ../bial/inc ../bial/lsh
+LIBS += -lz
+
+QMAKE_CXXFLAGS_RELEASE  = -Ofast
+QMAKE_CXXFLAGS_DEBUG += -O0 -DBIAL_DEBUG=1
+QMAKE_CXXFLAGS += -std=c++11 -DREAL_FLOAT
+QMAKE_LFLAGS += -O3

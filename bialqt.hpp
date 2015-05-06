@@ -23,7 +23,7 @@ namespace Bial {
 
 }
 
-#include "../bial/inc/Image.hpp"
+#include "Image.hpp"
 
 namespace Bial {
 

@@ -3,8 +3,7 @@
 
 #include <QObject>
 
-class Editor : public QObject
-{
+class Editor : public QObject {
   Q_OBJECT
 public:
   explicit Editor(QObject *parent = 0);

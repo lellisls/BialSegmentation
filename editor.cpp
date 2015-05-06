@@ -1,12 +1,10 @@
 #include "editor.h"
 
-Editor::Editor(QObject *parent) : QObject(parent)
-{
+Editor::Editor(QObject *parent) : QObject(parent) {
 
 }
 
-Editor::~Editor()
-{
+Editor::~Editor() {
 
 }
 

@@ -1,11 +1,11 @@
 #include "mainwindow.h"
 #include <QApplication>
 
-int main(int argc, char *argv[])
-{
-  QApplication a(argc, argv);
+int main(int argc, char *argv[]) {
+  QApplication app(argc, argv);
+  app.setOrganizationName("UNIFESP");
+  app.setApplicationName("BIAL");
   MainWindow w;
-  w.show();
-
-  return a.exec();
+  w.showMaximized();
+  return app.exec();
 }
