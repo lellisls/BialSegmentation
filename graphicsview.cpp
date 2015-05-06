@@ -35,7 +35,7 @@ void GraphicsView::clear() {
 
 void GraphicsView::loadImage( int pos ) {
   Bial::GuiImage * img = images.at(pos);
-  pixmapItem->setPixmap(img->getPixmap(0));
+  pixmapItem->setPixmap(img->getPixmap(0,1));
   scene()->setSceneRect(pixmapItem->pixmap().rect());
   fitInView(pixmapItem, Qt::KeepAspectRatio);
   editor.clear();
@@ -48,4 +48,5 @@ void GraphicsView::startSegmentation() {
   Bial::Vector< size_t > obj ( editor.objArea()->getPoints(img->width(),img->heigth()) );
   Bial::Vector< size_t > bkg ( editor.bkgArea()->getPoints(img->width(),img->heigth()) );
   img->segmentation(obj,bkg);
+  loadImage(currentImg);
 }
