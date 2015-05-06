@@ -32,6 +32,8 @@ private slots:
 
   void on_horizontalSlider_sliderMoved(int position);
 
+  void on_pushButton_clicked();
+
 private:
 
   void readSettings();
@@ -40,14 +42,4 @@ private:
   QString defaultFolder;
 };
 
-//CursorChanger generates temporary objects that changes back to default cursor when is deleted.
-class CursorChanger {
-public:
-  CursorChanger(const QCursor &cursor ) {
-    QApplication::setOverrideCursor(cursor);
-  }
-  ~CursorChanger() {
-    QApplication::setOverrideCursor(Qt::ArrowCursor);
-  }
-};
 #endif // MAINWINDOW_H

@@ -31,14 +31,18 @@ SOURCES += \
     main.cpp \
     mainwindow.cpp \
     graphicsview.cpp \
-    segmentationarea.cpp
+    segmentationarea.cpp \
+    editor.cpp \
+    cursorchanger.cpp
 
 HEADERS  += \
     mainwindow.h \
     graphicsview.h \
     bialqt.hpp \
     ../bial/gui/inc/guiimage.hpp \
-    segmentationarea.h
+    segmentationarea.h \
+    editor.h \
+    cursorchanger.h
 
 FORMS    += mainwindow.ui
 
