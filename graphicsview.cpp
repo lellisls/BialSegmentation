@@ -47,6 +47,6 @@ void GraphicsView::startSegmentation() {
   Bial::GuiImage * img = images.at(currentImg);
   Bial::Vector< size_t > obj ( editor.objArea()->getPoints(img->width(),img->heigth()) );
   Bial::Vector< size_t > bkg ( editor.bkgArea()->getPoints(img->width(),img->heigth()) );
-  img->segmentation(obj,bkg);
+  img->segmentation(obj,bkg).Write(img->getFileName().toStdString() + ".bkg.pgm");
   loadImage(currentImg);
 }
