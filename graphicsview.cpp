@@ -43,10 +43,15 @@ void GraphicsView::loadImage( int pos ) {
 }
 
 void GraphicsView::startSegmentation() {
+  COMMENT("Start segmentation function.",0);
   CursorChanger cursor(Qt::WaitCursor);
   Bial::GuiImage * img = images.at(currentImg);
+  COMMENT("Getting object seeds.",0);
   Bial::Vector< size_t > obj ( editor.objArea()->getPoints(img->width(),img->heigth()) );
+  COMMENT("Getting background seeds.",0);
   Bial::Vector< size_t > bkg ( editor.bkgArea()->getPoints(img->width(),img->heigth()) );
+  COMMENT("Calling segmentation and Writing file.",0);
   img->segmentation(obj,bkg).Write(img->getFileName().toStdString() + ".bkg.pgm");
-  loadImage(currentImg);
+  COMMENT("Reloading image pixmap.",0);
+  pixmapItem->setPixmap(img->getPixmap(0,1));
 }
