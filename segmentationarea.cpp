@@ -34,10 +34,21 @@ void SegmentationArea::clear() {
 
 Bial::Vector<size_t> SegmentationArea::getPoints(Bial::Vector< float> color) {
   COMMENT( "Converting seeds.", 0 );
+  if(labelImg.Channels() != color.size() ) {
+    BIAL_WARNING( "Color and image channels do not match." );
+  }
   Bial::Vector<size_t> res;
-  for(size_t pxl = 0; pxl <labelImg.ChannelSize(); ++pxl) {
-    if( (labelImg[pxl] == color[0]) && (labelImg[(pxl +labelImg.ChannelSize())] == color[1] ) && ( labelImg[(pxl +labelImg.ChannelSize() * 2)]== color[1]) ) {
-      res.push_back(pxl);
+  for(size_t x = 0; x <labelImg.size(0); ++x) {
+    for(size_t y = 0; y <labelImg.size(1); ++y) {
+      bool isEqual = true;
+      for(size_t clr = 0; clr < color.size(); ++clr ){
+        if( ! ( (labelImg(x,y,clr) == color[clr]) || (labelImg(x,y,clr) !=0 && color[clr] != 0) ) ) {
+          isEqual = false;
+        }
+      }
+      if(isEqual) {
+        res.push_back( labelImg.Position(x, y) );
+      }
     }
   }
   COMMENT( "Returning seeds.", 0 );
@@ -51,14 +62,7 @@ Bial::Image<int> SegmentationArea::getLabelImg() const {
 void SegmentationArea::setLabelImg(const Bial::Image<int> & value) {
   COMMENT("Set label image.", 0);
   clear();
-  value.PrintDimensions(std::cout << "Input: ");
-//  for( size_t pxl = 0; pxl < 10; ++pxl )
-//    value[ pxl ] = 255;
-  Bial::Image<int> aux( value );
-  aux.PrintDimensions(std::cout << "Aux: ");
- labelImg.PrintDimensions(std::cout << "After: ");
-  labelImg = aux;
- labelImg.PrintDimensions(std::cout << "Before: ");
+  labelImg = value;
   guiImage.setImageBial(labelImg);
   setPixmap(guiImage.getLabel(0,0));
 }
