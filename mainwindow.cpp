@@ -119,3 +119,14 @@ void MainWindow::openList(QFileInfoList list) {
 void MainWindow::on_pushButton_clicked() {
   ui->graphicsView->startSegmentation();
 }
+
+void MainWindow::on_actionSet_result_folder_triggered() {
+  QString temp = QFileDialog::getExistingDirectory(this, tr("Select default folder"), defaultFolder);
+  COMMENT("Setting default folder: \"" << temp.toStdString() << "\"", 1)
+
+  if (!temp.isEmpty()) {
+    resultsFolder = temp;
+  } else {
+    resultsFolder = QDir::tempPath();
+  }
+}

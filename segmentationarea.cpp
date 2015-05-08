@@ -4,8 +4,7 @@
 #include <QPen>
 #include <QTime>
 
-SegmentationArea::SegmentationArea( QGraphicsItem * parent, const QColor &color ) : QGraphicsPathItem(parent) {
-  setPen(QPen(color,10.0));
+SegmentationArea::SegmentationArea(const Bial::Image<int> & img, QGraphicsItem * parent) : QGraphicsPixmapItem(parent), labelImg( img.Dim(), 3 ), guiImage(img,QString(),NULL,true) {
 
 }
 
@@ -13,55 +12,55 @@ SegmentationArea::~SegmentationArea() {
 
 }
 
-void SegmentationArea::addPoint(QPointF point) {
-  m_path.lineTo(point);
-  setPath(m_path);
-  if(!lines.isEmpty()){
-    lines.back().push_back(point);
+void SegmentationArea::addPoint(QPointF point, Bial::Vector< float> color ) {
+  Bial::Vector < float > currentCoord( { (float)point.rx(), (float)point.ry()} );
+  if(!lastCoord.empty()) {
+    Bial::Line line (lastCoord,currentCoord,color);
+    line.Draw(labelImg);
   }
+  lastCoord = currentCoord;
+  guiImage.setImageBial(labelImg);
+  setPixmap(guiImage.getLabel(0,0));
 }
 
 void SegmentationArea::moveTo(QPointF point) {
-  m_path.moveTo(point);
-  lines.push_back(QVector<QPointF>(1,point));
+  lastCoord = Bial::Vector < float > ( { (float) point.rx(), (float)point.ry() } );
 }
 
 void SegmentationArea::clear() {
-  setPath(QPainterPath());
-  m_path = QPainterPath();
-  lines.clear();
-  update();
+  lastCoord.clear();
+  setPixmap(QPixmap());
 }
 
-
-Bial::Vector<size_t> SegmentationArea::getPoints(size_t width, size_t heigth) {
-  Bial::Image< int > img (width,heigth);
-  COMMENT( "Plotting line groups.", 0 );
-  int i = 0;
-  foreach (QVector<QPointF> points, lines) {
-    COMMENT( "Plotting group " << i++ << ".", 0 );
-    for( int pos = 0; pos < ( points.size() -1 ); ++pos ) {
-      QTime time;
-      time.start();
-      QPointF c1 = points.at(pos), c2 = points.at(pos+1);
-      Bial::Vector < float > st =  {(float)c1.rx(),(float)c1.ry()};
-      Bial::Vector < float > end = {(float)c2.rx(),(float)c2.ry()};
-      COMMENT( "Creating line " << st << " -> " << end << ".", 0 );
-      Bial::Line line (st,end);
-      COMMENT( "Drawing line.", 0 );
-      line.Draw(img);
-      COMMENT( "Elapsed time: "  << time.elapsed() << ".", 0 );
-    }
-  }
-
+Bial::Vector<size_t> SegmentationArea::getPoints(Bial::Vector< float> color) {
   COMMENT( "Converting seeds.", 0 );
   Bial::Vector<size_t> res;
-  for(size_t pxl = 0; pxl < img.size(); ++pxl) {
-    if( img[pxl] != 0 ) {
+  for(size_t pxl = 0; pxl <labelImg.ChannelSize(); ++pxl) {
+    if( (labelImg[pxl] == color[0]) && (labelImg[(pxl +labelImg.ChannelSize())] == color[1] ) && ( labelImg[(pxl +labelImg.ChannelSize() * 2)]== color[1]) ) {
       res.push_back(pxl);
     }
   }
   COMMENT( "Returning seeds.", 0 );
   return res;
 }
+
+Bial::Image<int> SegmentationArea::getLabelImg() const {
+  return labelImg;
+}
+
+void SegmentationArea::setLabelImg(const Bial::Image<int> & value) {
+  COMMENT("Set label image.", 0);
+  clear();
+  value.PrintDimensions(std::cout << "Input: ");
+//  for( size_t pxl = 0; pxl < 10; ++pxl )
+//    value[ pxl ] = 255;
+  Bial::Image<int> aux( value );
+  aux.PrintDimensions(std::cout << "Aux: ");
+ labelImg.PrintDimensions(std::cout << "After: ");
+  labelImg = aux;
+ labelImg.PrintDimensions(std::cout << "Before: ");
+  guiImage.setImageBial(labelImg);
+  setPixmap(guiImage.getLabel(0,0));
+}
+
 

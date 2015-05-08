@@ -34,12 +34,15 @@ private slots:
 
   void on_pushButton_clicked();
 
+  void on_actionSet_result_folder_triggered();
+
 private:
 
   void readSettings();
 
   Ui::MainWindow *ui;
   QString defaultFolder;
+  QString resultsFolder;
 };
 
 #endif // MAINWINDOW_H

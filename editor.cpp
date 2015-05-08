@@ -4,35 +4,30 @@
 #include <qdebug.h>
 
 Editor::Editor(QObject *parent) : QObject(parent), m_scribbling(false) {
-  m_objArea = new SegmentationArea(0,Qt::red);
-  m_bkgArea = new SegmentationArea(0,Qt::blue);
+  m_segmentationArea = new SegmentationArea(Bial::Image<int>({100,100},3));
 }
 
 Editor::~Editor() {
-  delete m_objArea;
-  delete m_bkgArea;
+  delete m_segmentationArea;
 }
 
 void Editor::install(QGraphicsScene * scn) {
   m_scene = scn;
   m_scene->installEventFilter(this);
-  m_scene->addItem(m_objArea);
-  m_scene->addItem(m_bkgArea);
-  m_objArea->show();
-  m_bkgArea->show();
+  m_scene->addItem(m_segmentationArea);
+  m_segmentationArea->show();
 }
 
 void Editor::clear() {
-  m_objArea->clear();
-  m_bkgArea->clear();
+  m_segmentationArea->clear();
 }
 
-SegmentationArea * Editor::bkgArea() const {
-  return m_bkgArea;
+SegmentationArea * Editor::segmentationArea() const {
+  return m_segmentationArea;
 }
 
-SegmentationArea * Editor::objArea() const {
-  return m_objArea;
+void Editor::setCurrentImage( const Bial::Image<int> & img ) {
+  m_segmentationArea->setLabelImg(Bial::Image<int>(img.Dim(),3));
 }
 
 bool Editor::eventFilter(QObject * obj, QEvent * evt) {
@@ -40,21 +35,16 @@ bool Editor::eventFilter(QObject * obj, QEvent * evt) {
   if(me != NULL ) {
     switch ((int) evt->type()) {
     case QEvent::GraphicsSceneMousePress : {
-        if(me->button() == Qt::LeftButton) {
-          m_objArea->moveTo(me->scenePos());
-          m_scribbling = true;
-        } else if(me->button() == Qt::RightButton) {
-          m_bkgArea->moveTo(me->scenePos());
-          m_scribbling = true;
-        }
+        m_segmentationArea->moveTo(me->scenePos());
+        m_scribbling = true;
         break;
       }
     case QEvent::GraphicsSceneMouseMove : {
         if(m_scribbling) {
           if(me->buttons() & Qt::LeftButton) {
-            m_objArea->addPoint(me->scenePos());
+            m_segmentationArea->addPoint(me->scenePos(),Bial::Color::red());
           } else if(me->buttons() & Qt::RightButton) {
-            m_bkgArea->addPoint(me->scenePos());
+            m_segmentationArea->addPoint(me->scenePos(),Bial::Color::blue());
           }
         }
         break;
