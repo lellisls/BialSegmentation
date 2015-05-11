@@ -65,9 +65,9 @@ void GraphicsView::startSegmentation() {
   CursorChanger cursor(Qt::WaitCursor);
   Bial::GuiImage * img = images.at(currentImg);
   COMMENT("Getting object seeds.",0);
-  Bial::Vector< size_t > obj ( editor.segmentationArea()->getPoints(1) );
+  Bial::Vector< size_t > obj ( editor.segmentationArea()->getPoints(2) );
   COMMENT("Getting background seeds.",0);
-  Bial::Vector< size_t > bkg ( editor.segmentationArea()->getPoints(2) );
+  Bial::Vector< size_t > bkg ( editor.segmentationArea()->getPoints(3) );
   COMMENT("Calling segmentation and Writing file.",0);
   mask = img->segmentation(obj,bkg);
   Bial::Adjacency adj ( Bial::Adjacency::Circular(1.45) );
