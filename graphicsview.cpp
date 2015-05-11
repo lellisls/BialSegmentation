@@ -2,8 +2,6 @@
 #include "graphicsview.h"
 #include "../bial/gui/inc/guiimage.hpp"
 
-#include <Color.hpp>
-
 GraphicsView::GraphicsView(QWidget *parent) :
   QGraphicsView(parent) {
   setScene( new QGraphicsScene(parent) );
@@ -67,15 +65,15 @@ void GraphicsView::startSegmentation() {
   CursorChanger cursor(Qt::WaitCursor);
   Bial::GuiImage * img = images.at(currentImg);
   COMMENT("Getting object seeds.",0);
-  Bial::Vector< size_t > obj ( editor.segmentationArea()->getPoints(Bial::Color::red()) );
+  Bial::Vector< size_t > obj ( editor.segmentationArea()->getPoints(1) );
   COMMENT("Getting background seeds.",0);
-  Bial::Vector< size_t > bkg ( editor.segmentationArea()->getPoints(Bial::Color::blue()) );
+  Bial::Vector< size_t > bkg ( editor.segmentationArea()->getPoints(2) );
   COMMENT("Calling segmentation and Writing file.",0);
   mask = img->segmentation(obj,bkg);
   Bial::Adjacency adj ( Bial::Adjacency::Circular(1.45) );
   COMMENT("Calculating mask gradient.",0);
   Bial::Image<int> gradient = Bial::Gradient::Morphological(mask, adj);
-  gradient *= 255;
+//  gradient *= 255;
   COMMENT("Generating gradient GuiImage.",0);
   Bial::GuiImage gradient_img( gradient, img->getFileName(), parent(), true );
   COMMENT("Loading gradient GuiImage.",0);

@@ -4,7 +4,7 @@
 #include <qdebug.h>
 
 Editor::Editor(QObject *parent) : QObject(parent), m_scribbling(false) {
-  m_segmentationArea = new SegmentationArea(Bial::Image<int>({100,100},3));
+  m_segmentationArea = new SegmentationArea(Bial::Image<int>(100,100));
 }
 
 Editor::~Editor() {
@@ -27,7 +27,7 @@ SegmentationArea * Editor::segmentationArea() const {
 }
 
 void Editor::setCurrentImage( const Bial::Image<int> & img ) {
-  m_segmentationArea->setLabelImg(Bial::Image<int>(img.Dim(),3));
+  m_segmentationArea->setLabelImg(Bial::Image<int>(img.Dim()));
 }
 
 bool Editor::eventFilter(QObject * obj, QEvent * evt) {
@@ -42,9 +42,9 @@ bool Editor::eventFilter(QObject * obj, QEvent * evt) {
     case QEvent::GraphicsSceneMouseMove : {
         if(m_scribbling) {
           if(me->buttons() & Qt::LeftButton) {
-            m_segmentationArea->addPoint(me->scenePos(),Bial::Color::red());
+            m_segmentationArea->addPoint(me->scenePos(),1);
           } else if(me->buttons() & Qt::RightButton) {
-            m_segmentationArea->addPoint(me->scenePos(),Bial::Color::blue());
+            m_segmentationArea->addPoint(me->scenePos(),2);
           }
         }
         break;
