@@ -41,7 +41,9 @@ bool Editor::eventFilter(QObject * obj, QEvent * evt) {
       }
     case QEvent::GraphicsSceneMouseMove : {
         if(m_scribbling) {
-          if(me->buttons() & Qt::LeftButton) {
+          if((me->modifiers() & Qt::ControlModifier) && (me->buttons() & Qt::LeftButton)) {
+            m_segmentationArea->erasePoint(me->scenePos());
+          } else if(me->buttons() & Qt::LeftButton) {
             m_segmentationArea->addPoint(me->scenePos(),1);
           } else if(me->buttons() & Qt::RightButton) {
             m_segmentationArea->addPoint(me->scenePos(),2);

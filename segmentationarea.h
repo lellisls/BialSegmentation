@@ -21,6 +21,7 @@ public:
   Bial::Image<int> getSeedsImg() const;
   void setLabelImg(const Bial::Image<int> & value);
 
+  void erasePoint(QPointF point);
 private:
   //  QPainterPath m_path;
   //  QVector< QVector< QPointF > > lines;
