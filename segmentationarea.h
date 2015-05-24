@@ -12,7 +12,7 @@ public:
   explicit SegmentationArea(const Bial::Image<int> & img, QGraphicsItem * parent = 0);
   ~SegmentationArea();
 
-  void addPoint(QPointF point, int color);
+  void addPoint(QPointF point, int color, double radius = 1.45);
   void moveTo(QPointF point);
   void clear();
   void updatePath();

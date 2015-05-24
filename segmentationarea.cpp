@@ -12,11 +12,19 @@ SegmentationArea::~SegmentationArea() {
 
 }
 
-void SegmentationArea::addPoint(QPointF point,int color) {
+void SegmentationArea::addPoint(QPointF point, int color, double radius) {
+  Bial::Adjacency adj = Bial::Adjacency::Circular(radius);
   Bial::Vector < float > currentCoord( { (float)point.rx(), (float)point.ry()} );
   if(!lastCoord.empty()) {
     Bial::Line line (lastCoord,currentCoord);
-    line.Draw(seedsImg,color);
+    line.Draw(seedsImg,-1);
+  }
+  for(size_t pxl = 0; pxl < seedsImg.size(); ++pxl) {
+    if(seedsImg[pxl] == -1) {
+      for( Bial::AdjacencyIterator itr = adj.begin(seedsImg,pxl); *itr != seedsImg.size(); ++itr) {
+        seedsImg[*itr] = color;
+      }
+    }
   }
   lastCoord = currentCoord;
   guiImage.setImageBial(seedsImg);
@@ -24,17 +32,7 @@ void SegmentationArea::addPoint(QPointF point,int color) {
 }
 
 void SegmentationArea::erasePoint(QPointF point) {
-  Bial::Adjacency adj = Bial::Adjacency::Circular(7.0);
-  addPoint(point,-1);
-  for(size_t pxl = 0; pxl < seedsImg.size(); ++pxl) {
-    if(seedsImg[pxl] == -1) {
-      for( Bial::AdjacencyIterator itr = adj.begin(seedsImg,pxl); *itr != seedsImg.size(); ++itr) {
-        seedsImg[*itr] = 0;
-      }
-    }
-  }
-  guiImage.setImageBial(seedsImg);
-  setPixmap(guiImage.getLabel(0,0));
+  addPoint(point,0,7);
 }
 
 void SegmentationArea::moveTo(QPointF point) {

@@ -16,6 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
   readSettings();
   setRange(0);
   connect(ui->graphicsView,&GraphicsView::setRange,this,&MainWindow::setRange);
+  QShortcut * refreshShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_R),this);
+  connect(refreshShortcut,&QShortcut::activated,this,&MainWindow::on_pushButtonReset_clicked);
+  QShortcut * segmentateShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_Space),this);
+  connect(segmentateShortcut,&QShortcut::activated,this,&MainWindow::on_pushButton_clicked);
 }
 
 MainWindow::~MainWindow() {
