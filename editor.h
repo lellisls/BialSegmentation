@@ -8,6 +8,7 @@
 
 class Editor : public QObject {
   Q_OBJECT
+  QGraphicsEllipseItem *ellipse;
 public:
   explicit Editor(QObject *parent = 0);
   ~Editor();

@@ -5,6 +5,7 @@
 
 Editor::Editor(QObject *parent) : QObject(parent), m_scribbling(false) {
   m_segmentationArea = new SegmentationArea(Bial::Image<int>(100,100));
+  ellipse = new QGraphicsEllipseItem(0,0,15,15);
 }
 
 Editor::~Editor() {
@@ -16,6 +17,8 @@ void Editor::install(QGraphicsScene * scn) {
   m_scene->installEventFilter(this);
   m_scene->addItem(m_segmentationArea);
   m_segmentationArea->show();
+  m_scene->addItem(ellipse);
+  ellipse->hide();
 }
 
 void Editor::clear() {
@@ -41,12 +44,18 @@ bool Editor::eventFilter(QObject * obj, QEvent * evt) {
     case QEvent::GraphicsSceneMousePress : {
         m_segmentationArea->moveTo(me->scenePos());
         m_scribbling = true;
+        if((me->modifiers() & Qt::ControlModifier) && (me->buttons() & Qt::LeftButton)) {
+          ellipse->show();
+        }else{
+          QApplication::setOverrideCursor(QCursor(Qt::CrossCursor));
+        }
         break;
       }
     case QEvent::GraphicsSceneMouseMove : {
         if(m_scribbling) {
           if((me->modifiers() & Qt::ControlModifier) && (me->buttons() & Qt::LeftButton)) {
             m_segmentationArea->erasePoint(me->scenePos());
+            ellipse->setPos(me->scenePos()- QPointF(7,7));
           } else if(me->buttons() & Qt::LeftButton) {
             m_segmentationArea->addPoint(me->scenePos(),2);
           } else if(me->buttons() & Qt::RightButton) {
@@ -56,6 +65,10 @@ bool Editor::eventFilter(QObject * obj, QEvent * evt) {
         break;
       }
     case QEvent::GraphicsSceneMouseRelease : {
+        if(QApplication::overrideCursor()){
+          QApplication::restoreOverrideCursor();
+        }
+        ellipse->hide();
         m_scribbling = false;
         break;
       }
