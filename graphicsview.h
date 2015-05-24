@@ -20,6 +20,7 @@ public:
 
   bool open( const QString & filename );
 
+  void clearSegmentationArea();
 signals:
   void setRange( int value );
 

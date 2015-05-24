@@ -130,3 +130,7 @@ void MainWindow::on_actionSet_result_folder_triggered() {
     resultsFolder = QDir::tempPath();
   }
 }
+
+void MainWindow::on_pushButtonReset_clicked() {
+  ui->graphicsView->clearSegmentationArea();
+}

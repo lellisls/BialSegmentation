@@ -35,6 +35,11 @@ void GraphicsView::clear() {
   emit setRange(0);
 }
 
+void GraphicsView::clearSegmentationArea(){
+  editor.clearSegmentationArea();
+  maskPixmapItem->setPixmap(QPixmap());
+}
+
 void GraphicsView::loadImage( int pos ) {
   Bial::GuiImage * img = images.at(pos);
   pixmapItem->setPixmap(img->getPixmap(0,1));

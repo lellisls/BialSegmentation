@@ -25,9 +25,9 @@ void SegmentationArea::addPoint(QPointF point,int color) {
 
 void SegmentationArea::erasePoint(QPointF point) {
   Bial::Adjacency adj = Bial::Adjacency::Circular(7.0);
-  addPoint(point,3);
+  addPoint(point,-1);
   for(size_t pxl = 0; pxl < seedsImg.size(); ++pxl) {
-    if(seedsImg[pxl] == 3) {
+    if(seedsImg[pxl] == -1) {
       for( Bial::AdjacencyIterator itr = adj.begin(seedsImg,pxl); *itr != seedsImg.size(); ++itr) {
         seedsImg[*itr] = 0;
       }
@@ -43,6 +43,7 @@ void SegmentationArea::moveTo(QPointF point) {
 
 void SegmentationArea::clear() {
   lastCoord.clear();
+  seedsImg.Set(0);
   setPixmap(QPixmap());
 }
 

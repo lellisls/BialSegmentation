@@ -36,6 +36,8 @@ private slots:
 
   void on_actionSet_result_folder_triggered();
 
+  void on_pushButtonReset_clicked();
+
 private:
 
   void readSettings();

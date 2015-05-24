@@ -30,6 +30,10 @@ void Editor::setCurrentImage( const Bial::Image<int> & img ) {
   m_segmentationArea->setLabelImg(Bial::Image<int>(img.Dim()));
 }
 
+void Editor::clearSegmentationArea() {
+  m_segmentationArea->clear();
+}
+
 bool Editor::eventFilter(QObject * obj, QEvent * evt) {
   QGraphicsSceneMouseEvent *me = dynamic_cast<QGraphicsSceneMouseEvent*>(evt);
   if(me != NULL ) {

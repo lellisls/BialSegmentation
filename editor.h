@@ -28,6 +28,7 @@ public:
   bool eventFilter(QObject *, QEvent *evt);
   SegmentationArea * segmentationArea() const;
   void setCurrentImage(const Bial::Image<int> & img);
+  void clearSegmentationArea();
 };
 
 #endif // EDITOR_H
