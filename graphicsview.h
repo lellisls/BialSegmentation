@@ -17,8 +17,7 @@ public:
   void resizeEvent( QResizeEvent * );
   void clear();
   void saveMask( const QString & resultsFolder );
-  bool open( const QString & filename );
-
+  void addImage( const QString & filename);
   void clearSegmentationArea();
 signals:
   void setRange( int value );
@@ -28,7 +27,9 @@ public slots:
   void startSegmentation();
 
 private:
-  QVector< Bial::GuiImage * > images;
+//  QVector< Bial::GuiImage * > images;
+  Bial::GuiImage * guiImage;
+  QStringList files;
   QGraphicsPixmapItem * pixmapItem;
   QGraphicsPixmapItem * maskPixmapItem;
   Bial::Image< int > labels;

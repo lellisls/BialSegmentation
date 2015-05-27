@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
   readSettings();
   setRange(0);
   connect(ui->graphicsView,&GraphicsView::setRange,this,&MainWindow::setRange);
+  resultsFolder = QDir::tempPath();
 //  QShortcut * refreshShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_R),this);
 //  connect(refreshShortcut,&QShortcut::activated,this,&MainWindow::on_pushButtonReset_clicked);
 //  QShortcut * segmentateShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_Space),this);
@@ -28,7 +29,9 @@ MainWindow::~MainWindow() {
 
 void MainWindow::openFile(QString fname) {
   try {
-    ui->graphicsView->open(fname);
+    ui->graphicsView->clear();
+    ui->graphicsView->addImage(fname);
+    ui->graphicsView->loadImage(0);
   } catch ( std::logic_error & e ) {
     std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
     QMessageBox::warning(this,"Error","Could not open file.",QMessageBox::Ok,QMessageBox::NoButton);
@@ -36,7 +39,7 @@ void MainWindow::openFile(QString fname) {
 }
 
 void MainWindow::on_actionOpen_triggered() {
-  QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder,tr("NetPBM Images( *.pbm *pgm *.ppm *.pnm *.pbm.gz *pgm.gz *.ppm.gz *.pnm.gz) "));
+  QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder,tr("PGM Images( *pgm *pgm.gz) "));
   if(!fname.isEmpty()) {
     CursorChanger cursor(Qt::WaitCursor);
     ui->graphicsView->clear();
@@ -46,12 +49,10 @@ void MainWindow::on_actionOpen_triggered() {
 
 void MainWindow::loadFolder(QDir dir) {
   if(dir.exists()) {
-    qDebug() << "Folder: " << dir;
     ui->graphicsView->clear();
     QStringList filters;
-    filters << "*.pbm" << "*.pgm" << "*.ppm" << "*.pnm" << "*.pbm.gz" << "*.pgm.gz" << "*.ppm.gz" << "*.pnm.gz";
+    filters << "*.pgm" << "*.pgm.gz";
     QFileInfoList list = dir.entryInfoList(filters);
-    qDebug() << "List size: " << list.size();
     openList(list);
   }else{
     qDebug() << "Directory don't exists.";
@@ -127,13 +128,16 @@ void MainWindow::openList(QFileInfoList list) {
   foreach( QFileInfo fileInfo, list) {
     if(fileInfo.exists()) {
       try {
-        ui->graphicsView->open(fileInfo.absoluteFilePath());
+        ui->graphicsView->addImage(fileInfo.absoluteFilePath());
       } catch ( std::logic_error & e ) {
         BIAL_WARNING( "Error opening file " << fileInfo.absoluteFilePath().toStdString() << ". " << e.what() );
       } catch ( std::runtime_error & e ) {
         BIAL_WARNING( "Error opening file " << fileInfo.absoluteFilePath().toStdString() << ". " << e.what() );
       }
     }
+  }
+  if(ui->horizontalSlider->maximum() > 0 ) {
+    ui->graphicsView->loadImage(0);
   }
 }
 

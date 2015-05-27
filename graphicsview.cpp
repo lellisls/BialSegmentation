@@ -3,7 +3,7 @@
 #include "../bial/gui/inc/guiimage.hpp"
 
 GraphicsView::GraphicsView(QWidget *parent) :
-  QGraphicsView(parent) {
+  QGraphicsView(parent), guiImage(NULL) {
   setScene( new QGraphicsScene(parent) );
   scene()->setBackgroundBrush(QBrush(Qt::black));
   pixmapItem = new QGraphicsPixmapItem();
@@ -17,39 +17,43 @@ void GraphicsView::resizeEvent(QResizeEvent *) {
   fitInView(scene()->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
-bool GraphicsView::open(const QString & filename) {
-  if(filename.isEmpty()) {
-    return false;
-  }
-  images.push_back(new Bial::GuiImage(filename,(QObject * )parent(),false));
-  emit setRange(images.size());
-  loadImage(0);
-  return true;
+void GraphicsView::addImage(const QString & filename) {
+  files << filename;
+  emit setRange(files.size());
 }
 
 void GraphicsView::clear() {
-  foreach (Bial::GuiImage * image, images) {
-    delete image;
+  if(guiImage) {
+    delete guiImage;
+    guiImage = NULL;
   }
-  images.clear();
+  files.clear();
   emit setRange(0);
 }
 
-void GraphicsView::clearSegmentationArea(){
+void GraphicsView::clearSegmentationArea() {
   editor.clearSegmentationArea();
   maskPixmapItem->setPixmap(QPixmap());
-  mask = Bial::Image<int>(images.at(currentImg)->getImageBial().Dim());
+  mask = Bial::Image<int>(guiImage->getImageBial().Dim());
 }
 
 void GraphicsView::loadImage( int pos ) {
-  Bial::GuiImage * img = images.at(pos);
-  pixmapItem->setPixmap(img->getPixmap(0,1));
-  maskPixmapItem->setPixmap(img->getPixmap(0,1));
+  QString filename = files.at(pos);
+  if(filename.isEmpty()) {
+    return;
+  }
+  if(guiImage) {
+    delete guiImage;
+  }
+  guiImage = new Bial::GuiImage(filename,(QObject * )parent(),false);
+  pixmapItem->setPixmap(guiImage->getPixmap(0,1));
+  maskPixmapItem->setPixmap(guiImage->getPixmap(0,1));
   scene()->setSceneRect(pixmapItem->pixmap().rect());
   fitInView(pixmapItem, Qt::KeepAspectRatio);
-  editor.setCurrentImage(img->getImageBial());
+  editor.setCurrentImage(guiImage->getImageBial());
+  mask = Bial::Image<int>(guiImage->getImageBial().Dim());
   currentImg = pos;
-  mask = Bial::Image<int>(images.at(currentImg)->getImageBial().Dim());
+  return;
 }
 
 void GraphicsView::loadMaskImage( Bial::GuiImage &label ) {
@@ -59,7 +63,7 @@ void GraphicsView::loadMaskImage( Bial::GuiImage &label ) {
 
 void GraphicsView::saveMask(const QString & resultsFolder) {
   COMMENT("Writing image label.",0);
-  Bial::GuiImage * img = images.at(currentImg);
+  Bial::GuiImage * img = guiImage;
   QDir dir(resultsFolder);
   QFileInfo fileInfo( img->fileName() );
   std::string fname = dir.absoluteFilePath(fileInfo.baseName() + ".pgm").toStdString();
@@ -69,13 +73,13 @@ void GraphicsView::saveMask(const QString & resultsFolder) {
 void GraphicsView::startSegmentation() {
   COMMENT("Start segmentation function.",0);
   CursorChanger cursor(Qt::WaitCursor);
-  Bial::GuiImage * img = images.at(currentImg);
+  Bial::GuiImage * img = guiImage;
   COMMENT("Getting object seeds.",0);
   Bial::Vector< size_t > obj ( editor.segmentationArea()->getPoints(2) );
   COMMENT("Getting background seeds.",0);
   Bial::Vector< size_t > bkg ( editor.segmentationArea()->getPoints(3) );
-  if(obj.empty() || bkg.empty()){
-    mask = Bial::Image<int>(images.at(currentImg)->getImageBial().Dim());
+  if(obj.empty() || bkg.empty()) {
+    mask = Bial::Image<int>(guiImage->getImageBial().Dim());
     return;
   }
   COMMENT("Calling segmentation and Writing file.",0);

@@ -47,7 +47,7 @@ HEADERS  += \
 FORMS    += mainwindow.ui
 
 INCLUDEPATH += inc ../bial/inc ../bial/lsh
-LIBS += -lz
+LIBS += -lz -fopenmp
 
 QMAKE_CXXFLAGS_RELEASE  = -Ofast
 QMAKE_CXXFLAGS_DEBUG += -O0 -DBIAL_DEBUG=1
