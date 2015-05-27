@@ -5,6 +5,7 @@
 #include <QCursor>
 #include <QApplication>
 #include <QFileInfoList>
+#include <QDir>
 
 namespace Ui {
   class MainWindow;
@@ -19,6 +20,7 @@ public:
 
   void openFile(QString fname);
   void openList(QFileInfoList list);
+  void loadFolder(QDir dir);
 private slots:
   void on_actionOpen_triggered();
 
@@ -38,9 +40,27 @@ private slots:
 
   void on_pushButtonReset_clicked();
 
-private:
+  void on_actionStart_Segmentation_triggered();
 
+  void on_actionReset_seeds_triggered();
+
+  void on_pushButtonPrevious_clicked();
+
+  void on_pushButtonNext_clicked();
+
+  void on_actionNext_triggered();
+
+  void on_actionPrevious_triggered();
+
+  void on_actionSave_triggered();
+
+private:
+  void next();
+  void previous();
   void readSettings();
+  void clear();
+  void start();
+  void loadImage(int position);
 
   Ui::MainWindow *ui;
   QString defaultFolder;

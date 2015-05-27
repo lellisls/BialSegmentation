@@ -46,6 +46,7 @@ bool Editor::eventFilter(QObject * obj, QEvent * evt) {
         m_scribbling = true;
         if((me->modifiers() & Qt::ControlModifier) && (me->buttons() & Qt::LeftButton)) {
           ellipse->show();
+          QApplication::setOverrideCursor(QCursor());
         }else{
           QApplication::setOverrideCursor(QCursor(Qt::CrossCursor));
         }

@@ -1,4 +1,4 @@
-#include "cursorchanger.h"
+﻿#include "cursorchanger.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
@@ -16,10 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
   readSettings();
   setRange(0);
   connect(ui->graphicsView,&GraphicsView::setRange,this,&MainWindow::setRange);
-  QShortcut * refreshShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_R),this);
-  connect(refreshShortcut,&QShortcut::activated,this,&MainWindow::on_pushButtonReset_clicked);
-  QShortcut * segmentateShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_Space),this);
-  connect(segmentateShortcut,&QShortcut::activated,this,&MainWindow::on_pushButton_clicked);
+//  QShortcut * refreshShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_R),this);
+//  connect(refreshShortcut,&QShortcut::activated,this,&MainWindow::on_pushButtonReset_clicked);
+//  QShortcut * segmentateShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_Space),this);
+//  connect(segmentateShortcut,&QShortcut::activated,this,&MainWindow::on_pushButton_clicked);
 }
 
 MainWindow::~MainWindow() {
@@ -44,16 +44,23 @@ void MainWindow::on_actionOpen_triggered() {
   }
 }
 
-void MainWindow::on_actionOpen_folder_triggered() {
-  QString folder = QFileDialog::getExistingDirectory(this,"Image directory",defaultFolder);
-  QDir dir( folder );
+void MainWindow::loadFolder(QDir dir) {
   if(dir.exists()) {
+    qDebug() << "Folder: " << dir;
     ui->graphicsView->clear();
     QStringList filters;
     filters << "*.pbm" << "*.pgm" << "*.ppm" << "*.pnm" << "*.pbm.gz" << "*.pgm.gz" << "*.ppm.gz" << "*.pnm.gz";
     QFileInfoList list = dir.entryInfoList(filters);
+    qDebug() << "List size: " << list.size();
     openList(list);
+  }else{
+    qDebug() << "Directory don't exists.";
   }
+}
+
+void MainWindow::on_actionOpen_folder_triggered() {
+  QString folder = QFileDialog::getExistingDirectory(this,"Image directory",defaultFolder);
+  loadFolder(QDir(folder));
 }
 
 void MainWindow::on_actionExit_triggered() {
@@ -83,7 +90,7 @@ void MainWindow::on_actionSet_default_folder_triggered() {
 
 void MainWindow::setRange(int value) {
   ui->horizontalSlider->setEnabled( value > 1 );
-  ui->horizontalSlider->setRange(0,value);
+  ui->horizontalSlider->setRange(0,value -1);
 }
 
 void MainWindow::readSettings() {
@@ -101,8 +108,18 @@ void MainWindow::readSettings() {
   }
 }
 
-void MainWindow::on_horizontalSlider_sliderMoved(int position) {
+void MainWindow::loadImage(int position) {
+  if(position <= 0) {
+    ui->pushButtonPrevious->setEnabled(false);
+  }
+  if(ui->horizontalSlider->maximum() > 0 && ui->horizontalSlider->maximum() > position) {
+    ui->pushButtonPrevious->setEnabled(true);
+  }
   ui->graphicsView->loadImage(position);
+}
+
+void MainWindow::on_horizontalSlider_sliderMoved(int position) {
+  loadImage(position);
 }
 
 void MainWindow::openList(QFileInfoList list) {
@@ -120,8 +137,12 @@ void MainWindow::openList(QFileInfoList list) {
   }
 }
 
-void MainWindow::on_pushButton_clicked() {
+void MainWindow::start() {
   ui->graphicsView->startSegmentation();
+}
+
+void MainWindow::on_pushButton_clicked() {
+  start();
 }
 
 void MainWindow::on_actionSet_result_folder_triggered() {
@@ -135,6 +156,52 @@ void MainWindow::on_actionSet_result_folder_triggered() {
   }
 }
 
-void MainWindow::on_pushButtonReset_clicked() {
+void MainWindow::clear() {
   ui->graphicsView->clearSegmentationArea();
+}
+
+void MainWindow::on_pushButtonReset_clicked() {
+  clear();
+}
+
+void MainWindow::on_actionStart_Segmentation_triggered() {
+  start();
+}
+
+void MainWindow::on_actionReset_seeds_triggered() {
+  clear();
+}
+
+void MainWindow::previous() {
+  if(ui->horizontalSlider->value() > 0) {
+    ui->horizontalSlider->setValue(ui->horizontalSlider->value() -1);
+    ui->graphicsView->loadImage(ui->horizontalSlider->value());
+  }
+}
+
+void MainWindow::on_pushButtonPrevious_clicked() {
+  previous();
+}
+
+void MainWindow::next() {
+  if(ui->horizontalSlider->value() < ui->horizontalSlider->maximum()) {
+    ui->horizontalSlider->setValue(ui->horizontalSlider->value() +1);
+    ui->graphicsView->loadImage(ui->horizontalSlider->value());
+  }
+}
+
+void MainWindow::on_pushButtonNext_clicked() {
+  next();
+}
+
+void MainWindow::on_actionNext_triggered() {
+  next();
+}
+
+void MainWindow::on_actionPrevious_triggered() {
+  previous();
+}
+
+void MainWindow::on_actionSave_triggered() {
+  ui->graphicsView->saveMask(resultsFolder);
 }

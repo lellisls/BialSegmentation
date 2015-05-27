@@ -38,6 +38,7 @@ void GraphicsView::clear() {
 void GraphicsView::clearSegmentationArea(){
   editor.clearSegmentationArea();
   maskPixmapItem->setPixmap(QPixmap());
+  mask = Bial::Image<int>(images.at(currentImg)->getImageBial().Dim());
 }
 
 void GraphicsView::loadImage( int pos ) {
@@ -48,7 +49,7 @@ void GraphicsView::loadImage( int pos ) {
   fitInView(pixmapItem, Qt::KeepAspectRatio);
   editor.setCurrentImage(img->getImageBial());
   currentImg = pos;
-  mask = Bial::Image<int>();
+  mask = Bial::Image<int>(images.at(currentImg)->getImageBial().Dim());
 }
 
 void GraphicsView::loadMaskImage( Bial::GuiImage &label ) {
@@ -60,8 +61,8 @@ void GraphicsView::saveMask(const QString & resultsFolder) {
   COMMENT("Writing image label.",0);
   Bial::GuiImage * img = images.at(currentImg);
   QDir dir(resultsFolder);
-  QFileInfo fileInfo( img->getFileName() );
-  std::string fname = dir.absoluteFilePath(fileInfo.baseName()).toStdString();
+  QFileInfo fileInfo( img->fileName() );
+  std::string fname = dir.absoluteFilePath(fileInfo.baseName() + ".pgm").toStdString();
   mask.Write(fname);
 }
 
@@ -74,6 +75,7 @@ void GraphicsView::startSegmentation() {
   COMMENT("Getting background seeds.",0);
   Bial::Vector< size_t > bkg ( editor.segmentationArea()->getPoints(3) );
   if(obj.empty() || bkg.empty()){
+    mask = Bial::Image<int>(images.at(currentImg)->getImageBial().Dim());
     return;
   }
   COMMENT("Calling segmentation and Writing file.",0);
@@ -83,7 +85,7 @@ void GraphicsView::startSegmentation() {
   Bial::Image<int> gradient = Bial::Gradient::Morphological(mask, adj);
 //  gradient *= 255;
   COMMENT("Generating gradient GuiImage.",0);
-  Bial::GuiImage gradient_img( gradient, img->getFileName(), parent(), true );
+  Bial::GuiImage gradient_img( gradient, img->fileName(), parent(), true );
   COMMENT("Loading gradient GuiImage.",0);
   loadMaskImage( gradient_img );
   COMMENT("Reloading image pixmap.",0);

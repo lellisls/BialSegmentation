@@ -15,9 +15,8 @@ class GraphicsView : public QGraphicsView {
 public:
   explicit GraphicsView(QWidget *parent = 0);
   void resizeEvent( QResizeEvent * );
-
   void clear();
-
+  void saveMask( const QString & resultsFolder );
   bool open( const QString & filename );
 
   void clearSegmentationArea();
@@ -38,7 +37,6 @@ private:
   int currentImg;
   void loadLabelsImage( Bial::GuiImage & bialImg );
   void loadMaskImage( Bial::GuiImage & bialImg );
-  void saveMask( const QString & resultsFolder );
 };
 
 #endif // GRAPHICSVIEW_H
