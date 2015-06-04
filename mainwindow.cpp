@@ -11,16 +11,22 @@
 
 MainWindow::MainWindow(QWidget *parent) :
   QMainWindow(parent),
-  ui(new Ui::MainWindow) {
+  ui(new Ui::MainWindow),
+  controller( new ImageController( this )),
+  scene( new QGraphicsScene(this)),
+  defaultFolder(QDir::homePath()),
+  resultsFolder(QDir::temp()) {
+
   ui->setupUi(this);
   readSettings();
   setRange(0);
-  connect(ui->graphicsView,&GraphicsView::setRange,this,&MainWindow::setRange);
   resultsFolder = QDir::tempPath();
-//  QShortcut * refreshShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_R),this);
-//  connect(refreshShortcut,&QShortcut::activated,this,&MainWindow::on_pushButtonReset_clicked);
-//  QShortcut * segmentateShortcut = new QShortcut(QKeySequence( Qt::CTRL + Qt::Key_Space),this);
-//  connect(segmentateShortcut,&QShortcut::activated,this,&MainWindow::on_pushButton_clicked);
+
+  connect(controller,&ImageController::setRange,this,&MainWindow::setRange);
+  scene->addItem(controller->pixmapItem());
+  ui->graphicsView->setViewNumber(0);
+  ui->graphicsView->setScene(scene);
+  ui->graphicsView->setSegmentationEditor(this);
 }
 
 MainWindow::~MainWindow() {
@@ -29,9 +35,7 @@ MainWindow::~MainWindow() {
 
 void MainWindow::openFile(QString fname) {
   try {
-    ui->graphicsView->clear();
-    ui->graphicsView->addImage(fname);
-    ui->graphicsView->loadImage(0);
+    controller->openFile(fname);
   } catch ( std::logic_error & e ) {
     std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
     QMessageBox::warning(this,"Error","Could not open file.",QMessageBox::Ok,QMessageBox::NoButton);
@@ -39,28 +43,28 @@ void MainWindow::openFile(QString fname) {
 }
 
 void MainWindow::on_actionOpen_triggered() {
-  QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder,tr("PGM Images( *pgm *pgm.gz) "));
+  QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder.path(),tr("PGM Images( *pgm *pgm.gz) "));
   if(!fname.isEmpty()) {
     CursorChanger cursor(Qt::WaitCursor);
-    ui->graphicsView->clear();
+//    ui->graphicsView->clear();
     openFile(fname);
   }
 }
 
 void MainWindow::loadFolder(QDir dir) {
   if(dir.exists()) {
-    ui->graphicsView->clear();
+//    ui->graphicsView->clear();
     QStringList filters;
     filters << "*.pgm" << "*.pgm.gz";
     QFileInfoList list = dir.entryInfoList(filters);
     openList(list);
-  }else{
+  } else {
     qDebug() << "Directory don't exists.";
   }
 }
 
 void MainWindow::on_actionOpen_folder_triggered() {
-  QString folder = QFileDialog::getExistingDirectory(this,"Image directory",defaultFolder);
+  QString folder = QFileDialog::getExistingDirectory(this,"Image directory",defaultFolder.path());
   loadFolder(QDir(folder));
 }
 
@@ -84,7 +88,7 @@ void MainWindow::on_actionSet_default_folder_triggered() {
 
     QSettings settings;
     settings.beginGroup("MainWindow");
-    settings.setValue("defaultFolder", defaultFolder);
+    settings.setValue("defaultFolder", defaultFolder.path());
     settings.endGroup();
   }
 }
@@ -99,13 +103,15 @@ void MainWindow::readSettings() {
   QSettings settings;
 
   settings.beginGroup("MainWindow");
-  defaultFolder = settings.value("defaultFolder").toString();
+  QString folder = settings.value("defaultFolder").toString();
 
-  if (!defaultFolder.isEmpty()) {
-    COMMENT("Read settings successfully! Default folder : \"" << defaultFolder.toStdString() << "\"", 1)
+  if (folder.isEmpty() ) {
+    COMMENT("Didn't have configuration file", 1);
+    defaultFolder = QDir::home();
+
   } else {
-    COMMENT("Didn't have configuration file", 1)
-    defaultFolder = QDir::homePath();
+    COMMENT("Read settings successfully! Default folder : \"" << defaultFolder.path().toStdString() << "\"", 1);
+    defaultFolder.setPath(folder);
   }
 }
 
@@ -116,7 +122,7 @@ void MainWindow::loadImage(int position) {
   if(ui->horizontalSlider->maximum() > 0 && ui->horizontalSlider->maximum() > position) {
     ui->pushButtonPrevious->setEnabled(true);
   }
-  ui->graphicsView->loadImage(position);
+  controller->setCurrentImagePos(position);
 }
 
 void MainWindow::on_horizontalSlider_sliderMoved(int position) {
@@ -125,10 +131,11 @@ void MainWindow::on_horizontalSlider_sliderMoved(int position) {
 
 void MainWindow::openList(QFileInfoList list) {
   CursorChanger cursor(Qt::WaitCursor);
+  controller->clear();
   foreach( QFileInfo fileInfo, list) {
     if(fileInfo.exists()) {
       try {
-        ui->graphicsView->addImage(fileInfo.absoluteFilePath());
+        controller->addFile(fileInfo.absoluteFilePath());
       } catch ( std::logic_error & e ) {
         BIAL_WARNING( "Error opening file " << fileInfo.absoluteFilePath().toStdString() << ". " << e.what() );
       } catch ( std::runtime_error & e ) {
@@ -137,12 +144,13 @@ void MainWindow::openList(QFileInfoList list) {
     }
   }
   if(ui->horizontalSlider->maximum() > 0 ) {
-    ui->graphicsView->loadImage(0);
+    controller->setCurrentImagePos(0);
   }
 }
 
 void MainWindow::start() {
-  ui->graphicsView->startSegmentation();
+  CursorChanger changer(Qt::WaitCursor);
+  controller->currentImage()->startSegmentation();
 }
 
 void MainWindow::on_pushButton_clicked() {
@@ -150,7 +158,7 @@ void MainWindow::on_pushButton_clicked() {
 }
 
 void MainWindow::on_actionSet_result_folder_triggered() {
-  QString temp = QFileDialog::getExistingDirectory(this, tr("Select default folder"), defaultFolder);
+  QString temp = QFileDialog::getExistingDirectory(this, tr("Select default folder"), defaultFolder.path());
   COMMENT("Setting default folder: \"" << temp.toStdString() << "\"", 1)
 
   if (!temp.isEmpty()) {
@@ -161,7 +169,7 @@ void MainWindow::on_actionSet_result_folder_triggered() {
 }
 
 void MainWindow::clear() {
-  ui->graphicsView->clearSegmentationArea();
+  controller->currentImage()->segmentationArea()->clear();
 }
 
 void MainWindow::on_pushButtonReset_clicked() {
@@ -179,18 +187,14 @@ void MainWindow::on_actionReset_seeds_triggered() {
 void MainWindow::previous() {
   if(ui->horizontalSlider->value() > 0) {
     ui->horizontalSlider->setValue(ui->horizontalSlider->value() -1);
-    ui->graphicsView->loadImage(ui->horizontalSlider->value());
+    controller->setCurrentImagePos(ui->horizontalSlider->value());
   }
-}
-
-void MainWindow::on_pushButtonPrevious_clicked() {
-  previous();
 }
 
 void MainWindow::next() {
   if(ui->horizontalSlider->value() < ui->horizontalSlider->maximum()) {
     ui->horizontalSlider->setValue(ui->horizontalSlider->value() +1);
-    ui->graphicsView->loadImage(ui->horizontalSlider->value());
+    controller->setCurrentImagePos(ui->horizontalSlider->value());
   }
 }
 
@@ -202,10 +206,33 @@ void MainWindow::on_actionNext_triggered() {
   next();
 }
 
+void MainWindow::on_pushButtonPrevious_clicked() {
+  previous();
+}
+
 void MainWindow::on_actionPrevious_triggered() {
   previous();
 }
 
 void MainWindow::on_actionSave_triggered() {
-  ui->graphicsView->saveMask(resultsFolder);
+  CursorChanger changer(Qt::WaitCursor);
+  controller->currentImage()->startSegmentation().Write(resultsFolder.absoluteFilePath(controller->currentImage()->fileName()).toStdString());
+}
+
+void MainWindow::paintLabel(QPointF pos, int color, int viewNumber) {
+  Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
+  controller->currentImage()->segmentationArea()->addPoint(coord,color);
+  controller->update();
+}
+
+void MainWindow::startLine(QPointF pos, int viewNumber) {
+  Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
+  controller->currentImage()->segmentationArea()->moveTo(coord);
+  controller->update();
+}
+
+void MainWindow::eraseLabel(QPointF pos, int viewNumber) {
+  Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
+  controller->currentImage()->segmentationArea()->addPoint(coord,0,7.0);
+  controller->update();
 }

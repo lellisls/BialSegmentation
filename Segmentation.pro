@@ -28,25 +28,28 @@ SOURCES += \
     ../bial/lsh/NearNeighbors.cpp \
     ../bial/lsh/Random.cpp \
     ../bial/lsh/SelfTuning.cpp \
+    ../bial/gui/src/segmentationeditor.cpp \
+    ../bial/gui/src/segmentationarea.cpp \
+    ../bial/gui/src/graphicsview.cpp \
     main.cpp \
     mainwindow.cpp \
-    graphicsview.cpp \
-    segmentationarea.cpp \
-    editor.cpp \
-    cursorchanger.cpp
+    cursorchanger.cpp \
+    imagecontroller.cpp \
+    ../bial/gui/src/guiimage.cpp
 
 HEADERS  += \
-    mainwindow.h \
-    graphicsview.h \
-    bialqt.hpp \
+    ../bial/gui/inc/segmentationeditor.h \
+    ../bial/gui/inc/segmentationarea.h \
+    ../bial/gui/inc/graphicsview.hpp \
     ../bial/gui/inc/guiimage.hpp \
-    segmentationarea.h \
-    editor.h \
-    cursorchanger.h
+    mainwindow.h \
+    bialqt.hpp \
+    cursorchanger.h \
+    imagecontroller.h
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += inc ../bial/inc ../bial/lsh
+INCLUDEPATH += inc ../bial/inc ../bial/lsh ../bial/gui/inc
 LIBS += -lz -fopenmp
 
 QMAKE_CXXFLAGS_RELEASE  = -Ofast

@@ -1,18 +1,22 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "imagecontroller.h"
+
 #include <QMainWindow>
 #include <QCursor>
 #include <QApplication>
 #include <QFileInfoList>
 #include <QDir>
+#include <segmentationeditor.h>
 
 namespace Ui {
   class MainWindow;
 }
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow, public SegmentationEditor {
   Q_OBJECT
+
 
 public:
   explicit MainWindow(QWidget *parent = 0);
@@ -21,6 +25,7 @@ public:
   void openFile(QString fname);
   void openList(QFileInfoList list);
   void loadFolder(QDir dir);
+  void loadImage(int position);
 private slots:
   void on_actionOpen_triggered();
 
@@ -60,11 +65,18 @@ private:
   void readSettings();
   void clear();
   void start();
-  void loadImage(int position);
 
   Ui::MainWindow *ui;
-  QString defaultFolder;
-  QString resultsFolder;
+  ImageController * controller;
+  QDir defaultFolder;
+  QDir resultsFolder;
+  QGraphicsScene * scene;
+
+  // SegmentationEditor interface
+public:
+  void paintLabel(QPointF pos, int color, int viewNumber);
+  void startLine(QPointF pos, int viewNumber);
+  void eraseLabel(QPointF pos, int viewNumber);
 };
 
 #endif // MAINWINDOW_H
