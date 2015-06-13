@@ -28,7 +28,6 @@ SOURCES += \
     ../bial/lsh/NearNeighbors.cpp \
     ../bial/lsh/Random.cpp \
     ../bial/lsh/SelfTuning.cpp \
-    ../bial/gui/src/segmentationeditor.cpp \
     ../bial/gui/src/segmentationarea.cpp \
     ../bial/gui/src/graphicsview.cpp \
     main.cpp \

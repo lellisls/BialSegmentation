@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->graphicsView->setViewNumber(0);
   ui->graphicsView->setScene(scene);
   ui->graphicsView->setSegmentationEditor(this);
+  loadImage(-1);
 }
 
 MainWindow::~MainWindow() {
@@ -112,15 +113,17 @@ void MainWindow::readSettings() {
 void MainWindow::loadImage(int position) {
   if(position > 0 && controller->count() > 1 && controller->count() >= position) {
     ui->pushButtonPrevious->setEnabled(true);
-  }else{
+  } else {
     ui->pushButtonPrevious->setEnabled(false);
   }
   ui->pushButtonNext->setEnabled( (position + 1) < controller->count() );
   controller->setCurrentImagePos(position);
-  if(controller->currentImage()){
+  if(controller->currentImage()) {
     ui->graphicsView->fitInView(controller->pixmapItem()->boundingRect());
     setWindowTitle("Bial Segmentation ( " + QFileInfo(controller->currentImage()->fileName()).fileName() + " )");
-  }else{
+    ui->pushButton->setEnabled(true);
+    ui->pushButtonReset->setEnabled(true);
+  } else {
     ui->pushButton->setEnabled(false);
     ui->pushButtonNext->setEnabled(false);
     ui->pushButtonPrevious->setEnabled(false);
@@ -148,8 +151,10 @@ void MainWindow::openList(QFileInfoList list) {
 }
 
 void MainWindow::start() {
-  CursorChanger changer(Qt::WaitCursor);
-  controller->currentImage()->startSegmentation();
+  if(controller->currentImage()) {
+    CursorChanger changer(Qt::WaitCursor);
+    controller->currentImage()->startSegmentation();
+  }
 }
 
 void MainWindow::on_pushButton_clicked() {
@@ -159,7 +164,6 @@ void MainWindow::on_pushButton_clicked() {
 void MainWindow::on_actionSet_result_folder_triggered() {
   QString temp = QFileDialog::getExistingDirectory(this, tr("Select default folder"), defaultFolder.path());
   COMMENT("Setting default folder: \"" << temp.toStdString() << "\"", 1)
-
   if (!temp.isEmpty()) {
     resultsFolder = temp;
   } else {
@@ -168,8 +172,10 @@ void MainWindow::on_actionSet_result_folder_triggered() {
 }
 
 void MainWindow::clear() {
-  controller->currentImage()->segmentationArea()->clear();
-  controller->update();
+  if(controller->currentImage()) {
+    controller->currentImage()->segmentationArea()->clear();
+    controller->update();
+  }
 }
 
 void MainWindow::on_pushButtonReset_clicked() {
@@ -213,24 +219,32 @@ void MainWindow::on_actionPrevious_triggered() {
 }
 
 void MainWindow::on_actionSave_triggered() {
-  CursorChanger changer(Qt::WaitCursor);
-  controller->currentImage()->startSegmentation().Write(resultsFolder.absoluteFilePath(controller->currentImage()->fileName()).toStdString());
+  if(controller->currentImage()) {
+    CursorChanger changer(Qt::WaitCursor);
+    controller->currentImage()->startSegmentation().Write(resultsFolder.absoluteFilePath(controller->currentImage()->fileName()).toStdString());
+  }
 }
 
 void MainWindow::paintLabel(QPointF pos, int color, int viewNumber) {
-  Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
-  controller->currentImage()->segmentationArea()->addPoint(coord,color);
-  controller->update();
+  if(controller->currentImage()) {
+    Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
+    controller->currentImage()->segmentationArea()->addPoint(coord,color);
+    controller->update();
+  }
 }
 
 void MainWindow::startLine(QPointF pos, int viewNumber) {
-  Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
-  controller->currentImage()->segmentationArea()->moveTo(coord);
-  controller->update();
+  if(controller->currentImage()) {
+    Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
+    controller->currentImage()->segmentationArea()->moveTo(coord);
+    controller->update();
+  }
 }
 
 void MainWindow::eraseLabel(QPointF pos, int viewNumber) {
-  Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
-  controller->currentImage()->segmentationArea()->addPoint(coord,0,7.0);
-  controller->update();
+  if(controller->currentImage()) {
+    Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
+    controller->currentImage()->segmentationArea()->addPoint(coord,0,7.0);
+    controller->update();
+  }
 }
