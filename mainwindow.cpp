@@ -221,7 +221,10 @@ void MainWindow::on_actionPrevious_triggered() {
 void MainWindow::on_actionSave_triggered() {
   if(controller->currentImage()) {
     CursorChanger changer(Qt::WaitCursor);
-    controller->currentImage()->startSegmentation().Write(resultsFolder.absoluteFilePath(controller->currentImage()->fileName()).toStdString());
+    QFileInfo fileInfo(controller->currentImage()->fileName());
+    QString resultFile = resultsFolder.absoluteFilePath(fileInfo.fileName());
+    ui->statusBar->showMessage("Saving file to : " + resultFile);
+    controller->currentImage()->startSegmentation().Write(resultFile.toStdString());
   }
 }
 
