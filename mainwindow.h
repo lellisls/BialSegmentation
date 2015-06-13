@@ -21,7 +21,6 @@ class MainWindow : public QMainWindow, public SegmentationEditor {
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
-
   void openFile(QString fname);
   void openList(QFileInfoList list);
   void loadFolder(QDir dir);
@@ -34,10 +33,6 @@ private slots:
   void on_actionExit_triggered();
 
   void on_actionSet_default_folder_triggered();
-
-  void setRange( int value );
-
-  void on_horizontalSlider_sliderMoved(int position);
 
   void on_pushButton_clicked();
 

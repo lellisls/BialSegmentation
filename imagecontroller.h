@@ -5,7 +5,7 @@
 #include <guiimage.hpp>
 
 class ImageController : public QObject {
-   Q_OBJECT
+  Q_OBJECT
 private:
   QVector<Bial::GuiImage *> m_images;
   QGraphicsPixmapItem * m_pixmapItem;
@@ -26,11 +26,10 @@ public:
   QGraphicsPixmapItem * pixmapItem() const;
   void setPixmapItem(QGraphicsPixmapItem * value);
 
+  int count();
 public slots:
   void update();
 
-signals:
-  void setRange( int value );
 };
 
 

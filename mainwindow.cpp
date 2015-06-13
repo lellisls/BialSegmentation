@@ -19,10 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
   ui->setupUi(this);
   readSettings();
-  setRange(0);
   resultsFolder = QDir::tempPath();
 
-  connect(controller,&ImageController::setRange,this,&MainWindow::setRange);
   scene->addItem(controller->pixmapItem());
   ui->graphicsView->setViewNumber(0);
   ui->graphicsView->setScene(scene);
@@ -36,6 +34,7 @@ MainWindow::~MainWindow() {
 void MainWindow::openFile(QString fname) {
   try {
     controller->openFile(fname);
+    loadImage(0);
   } catch ( std::logic_error & e ) {
     std::cerr << "Error opening file " << fname.toStdString() << ". " << e.what() << std::endl;
     QMessageBox::warning(this,"Error","Could not open file.",QMessageBox::Ok,QMessageBox::NoButton);
@@ -93,11 +92,6 @@ void MainWindow::on_actionSet_default_folder_triggered() {
   }
 }
 
-void MainWindow::setRange(int value) {
-  ui->horizontalSlider->setEnabled( value > 1 );
-  ui->horizontalSlider->setRange(0,value -1);
-}
-
 void MainWindow::readSettings() {
   COMMENT("Reading QSettings", 1)
   QSettings settings;
@@ -116,17 +110,22 @@ void MainWindow::readSettings() {
 }
 
 void MainWindow::loadImage(int position) {
-  if(position <= 0) {
+  if(position > 0 && controller->count() > 1 && controller->count() >= position) {
+    ui->pushButtonPrevious->setEnabled(true);
+  }else{
     ui->pushButtonPrevious->setEnabled(false);
   }
-  if(ui->horizontalSlider->maximum() > 0 && ui->horizontalSlider->maximum() > position) {
-    ui->pushButtonPrevious->setEnabled(true);
-  }
+  ui->pushButtonNext->setEnabled( (position + 1) < controller->count() );
   controller->setCurrentImagePos(position);
-}
-
-void MainWindow::on_horizontalSlider_sliderMoved(int position) {
-  loadImage(position);
+  if(controller->currentImage()){
+    ui->graphicsView->fitInView(controller->pixmapItem()->boundingRect());
+    setWindowTitle("Bial Segmentation ( " + QFileInfo(controller->currentImage()->fileName()).fileName() + " )");
+  }else{
+    ui->pushButton->setEnabled(false);
+    ui->pushButtonNext->setEnabled(false);
+    ui->pushButtonPrevious->setEnabled(false);
+    ui->pushButtonReset->setEnabled(false);
+  }
 }
 
 void MainWindow::openList(QFileInfoList list) {
@@ -143,8 +142,8 @@ void MainWindow::openList(QFileInfoList list) {
       }
     }
   }
-  if(ui->horizontalSlider->maximum() > 0 ) {
-    controller->setCurrentImagePos(0);
+  if(controller->count() > 0 ) {
+    loadImage(0);
   }
 }
 
@@ -170,6 +169,7 @@ void MainWindow::on_actionSet_result_folder_triggered() {
 
 void MainWindow::clear() {
   controller->currentImage()->segmentationArea()->clear();
+  controller->update();
 }
 
 void MainWindow::on_pushButtonReset_clicked() {
@@ -185,16 +185,14 @@ void MainWindow::on_actionReset_seeds_triggered() {
 }
 
 void MainWindow::previous() {
-  if(ui->horizontalSlider->value() > 0) {
-    ui->horizontalSlider->setValue(ui->horizontalSlider->value() -1);
-    controller->setCurrentImagePos(ui->horizontalSlider->value());
+  if(controller->currentImagePos() > 0) {
+    loadImage(controller->currentImagePos() - 1);
   }
 }
 
 void MainWindow::next() {
-  if(ui->horizontalSlider->value() < ui->horizontalSlider->maximum()) {
-    ui->horizontalSlider->setValue(ui->horizontalSlider->value() +1);
-    controller->setCurrentImagePos(ui->horizontalSlider->value());
+  if((controller->currentImagePos() + 1) < controller->count() ) {
+    loadImage(controller->currentImagePos() + 1);
   }
 }
 

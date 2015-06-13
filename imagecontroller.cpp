@@ -26,11 +26,11 @@ int ImageController::currentImagePos() const {
 }
 
 void ImageController::setCurrentImagePos(int position) {
-  if(currentImage()){
+  if(currentImage()) {
     disconnect(currentImage(),&Bial::GuiImage::imageUpdated,this,&ImageController::update);
   }
   m_currentImagePos = position;
-  if(currentImage()){
+  if(currentImage()) {
     connect(currentImage(),&Bial::GuiImage::imageUpdated,this,&ImageController::update);
   }
   update();
@@ -38,7 +38,6 @@ void ImageController::setCurrentImagePos(int position) {
 
 void ImageController::addFile(QString fname) {
   m_images.append(new Bial::GuiImage(fname,this));
-  emit setRange(m_images.size());
 }
 
 void ImageController::openFile(QString fname) {
@@ -49,8 +48,11 @@ void ImageController::openFile(QString fname) {
 
 void ImageController::clear() {
   m_images.clear();
-  emit setRange(0);
   setCurrentImagePos(-1);
+}
+
+int ImageController::count() {
+  return m_images.size();
 }
 
 Bial::GuiImage *ImageController::currentImage() {

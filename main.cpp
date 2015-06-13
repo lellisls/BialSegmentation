@@ -12,9 +12,11 @@ int main(int argc, char *argv[]) {
   if( argc == 2 ) {
     QFileInfo info(argv[1]);
     if(info.isFile()) {
+      COMMENT("Loading file: " << info.absoluteFilePath().toStdString(), 0);
       w.openFile(info.fileName());
     }else{
-      w.loadFolder(info.dir());
+      COMMENT("Loading folder: " << info.absoluteFilePath().toStdString(), 0);
+      w.loadFolder(QDir(argv[1]));
     }
   } else {
     QFileInfoList list;
