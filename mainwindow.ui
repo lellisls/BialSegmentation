@@ -92,8 +92,17 @@
     <addaction name="actionPrevious"/>
     <addaction name="actionSave"/>
    </widget>
+   <widget class="QMenu" name="menuClassification">
+    <property name="title">
+     <string>Classification</string>
+    </property>
+    <addaction name="actionLoad_trainment_file"/>
+    <addaction name="actionClassify"/>
+    <addaction name="actionSet_softwares_folder"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuActions"/>
+   <addaction name="menuClassification"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -171,6 +180,24 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionLoad_trainment_file">
+   <property name="text">
+    <string>Load trainment file</string>
+   </property>
+  </action>
+  <action name="actionClassify">
+   <property name="text">
+    <string>Classify</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+C</string>
+   </property>
+  </action>
+  <action name="actionSet_softwares_folder">
+   <property name="text">
+    <string>Set softwares folder</string>
    </property>
   </action>
  </widget>

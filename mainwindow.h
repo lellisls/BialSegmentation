@@ -54,6 +54,12 @@ private slots:
 
   void on_actionSave_triggered();
 
+  void on_actionLoad_trainment_file_triggered();
+
+  void on_actionClassify_triggered();
+
+  void on_actionSet_softwares_folder_triggered();
+
 private:
   void next();
   void previous();
@@ -65,8 +71,9 @@ private:
   ImageController * controller;
   QDir defaultFolder;
   QDir resultsFolder;
+  QDir softwaresFolder;
   QGraphicsScene * scene;
-
+  QFileInfo trainmentFile;
   // SegmentationEditor interface
 public:
   void paintLabel(QPointF pos, int color, int viewNumber);

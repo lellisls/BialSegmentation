@@ -5,8 +5,8 @@
 
 int main(int argc, char *argv[]) {
   QApplication app(argc, argv);
-  app.setOrganizationName("UNIFESP");
-  app.setApplicationName("BIAL");
+  app.setOrganizationName("GIBIS-UNIFESP");
+  app.setApplicationName("BIAL-Segmentation");
   MainWindow w;
   w.showMaximized();
   if( argc == 2 ) {

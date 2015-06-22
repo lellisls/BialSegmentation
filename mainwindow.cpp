@@ -43,7 +43,7 @@ void MainWindow::openFile(QString fname) {
 }
 
 void MainWindow::on_actionOpen_triggered() {
-  QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder.path(),tr("PGM Images( *pgm *pgm.gz) "));
+  QString fname = QFileDialog::getOpenFileName(this,"Open image",defaultFolder.path(),tr("PPM Images( *ppm *ppm.gz) "));
   if(!fname.isEmpty()) {
     CursorChanger cursor(Qt::WaitCursor);
 //    ui->graphicsView->clear();
@@ -55,7 +55,7 @@ void MainWindow::loadFolder(QDir dir) {
   if(dir.exists()) {
 //    ui->graphicsView->clear();
     QStringList filters;
-    filters << "*.pgm" << "*.pgm.gz";
+    filters << "*.ppm" << "*.ppm.gz";
     QFileInfoList list = dir.entryInfoList(filters);
     openList(list);
   } else {
@@ -108,6 +108,11 @@ void MainWindow::readSettings() {
     COMMENT("Read settings successfully! Default folder : \"" << defaultFolder.path().toStdString() << "\"", 1);
     defaultFolder.setPath(folder);
   }
+
+  trainmentFile.setFile(settings.value("trainmentFile").toString());
+
+  softwaresFolder.setPath(settings.value("softwaresFolder").toString());
+
 }
 
 void MainWindow::loadImage(int position) {
@@ -158,7 +163,9 @@ void MainWindow::start() {
 }
 
 void MainWindow::on_pushButton_clicked() {
-  start();
+//  start();
+  CursorChanger changer(Qt::WaitCursor);
+  on_actionClassify_triggered();
 }
 
 void MainWindow::on_actionSet_result_folder_triggered() {
@@ -249,5 +256,55 @@ void MainWindow::eraseLabel(QPointF pos, int viewNumber) {
     Bial::Vector<float> coord = controller->currentImage()->getBialPosition(pos.toPoint(), viewNumber, 0);
     controller->currentImage()->segmentationArea()->addPoint(coord,0,7.0);
     controller->update();
+  }
+}
+
+void MainWindow::on_actionLoad_trainment_file_triggered() {
+  QString file =  QFileDialog::getOpenFileName(this,"Open trainment file",defaultFolder.path(),tr("LibSVM model files( *.model ) "));
+  if(!file.isEmpty()) {
+    trainmentFile.setFile(file);
+
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    settings.setValue("trainmentFile", trainmentFile.absolutePath());
+    settings.endGroup();
+  }
+}
+
+void MainWindow::on_actionSet_softwares_folder_triggered() {
+  QString folder = QFileDialog::getExistingDirectory(this, tr("Select softwares folder"), defaultFolder.path());
+  COMMENT("Setting softwares folder to \"" << folder.toStdString() << "\"", 1)
+  if (!folder.isEmpty()) {
+    softwaresFolder = QDir(folder);
+    QSettings settings;
+    settings.beginGroup("MainWindow");
+    settings.setValue("softwaresFolder", softwaresFolder.absolutePath());
+    settings.endGroup();
+  }
+}
+
+void MainWindow::on_actionClassify_triggered() {
+  if(controller->currentImage()) {
+    QDir tempDir = QDir::temp();
+    QStringList args;
+    QString maskFile = tempDir.absoluteFilePath("mask.pgm");
+    QString ppmFile = tempDir.absoluteFilePath("image.ppm");
+    args << ppmFile << maskFile << trainmentFile.absoluteFilePath();
+    controller->currentImage()->startSegmentation().Write(maskFile.toStdString());
+    controller->currentImage()->getImageBial().Write(ppmFile.toStdString());
+    QProcess process;
+    ui->statusBar->showMessage("Running " + softwaresFolder.absoluteFilePath("classify.sh"), 2000);
+
+    process.setWorkingDirectory(softwaresFolder.absolutePath());
+    process.start("./classify.sh", args );
+
+    if(!process.waitForFinished()){
+      ui->statusBar->showMessage("FAILED", 2000);
+      return;
+    }
+    QString output( process.readAllStandardOutput() );
+    std::cout << output.toStdString() << std::endl;
+    QMessageBox::warning(this,"Resultado:",QString("Este alimento é do tipo <strong>" + output.toUpper() + "</strong>" ));
+//    ui->statusBar->showMessage("RESULT: " + output, 2000);
   }
 }
